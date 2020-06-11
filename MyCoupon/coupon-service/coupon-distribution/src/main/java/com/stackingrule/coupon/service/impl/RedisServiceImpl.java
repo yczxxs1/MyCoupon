@@ -73,7 +73,6 @@ public class RedisServiceImpl implements IRedisService {
      * @param userId 用户 id
      * @param status 优惠券状态列表
      */
-    @Override
     @SuppressWarnings("all")
     public void saveEmptyCouponListToCache(Long userId, List<Integer> status) {
 
@@ -158,6 +157,30 @@ public class RedisServiceImpl implements IRedisService {
         return result;
     }
 
+    @Override
+    public Integer addCouponToCacheFromDb(Long userId, List<Coupon> coupons, Integer status) throws CouponException {
+        log.debug("Add Coupon To Cache From Db.");
+
+        Map<String, String> needCachedObject = new HashMap<>();
+        coupons.forEach(c -> needCachedObject.put(
+                c.getId().toString(),
+                JSON.toJSONString(c)
+        ));
+
+        String redisKey = status2RedisKey(status, userId);
+
+        redisTemplate.opsForHash().putAll(redisKey, needCachedObject);
+        log.info("Add {} Coupons To Cache: {}, {}",
+                needCachedObject.size(), userId, redisKey);
+
+        redisTemplate.expire(
+                redisKey,
+                getRandomExpirationTime(1, 2),
+                TimeUnit.SECONDS
+        );
+
+        return needCachedObject.size();
+    }
 
 
     /**

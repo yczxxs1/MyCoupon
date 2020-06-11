@@ -10,8 +10,10 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://server1:8000/eureka/
+      defaultZone: http://localhost:8000/eureka/
 
-#logging:
-#  level:
-#    com.imooc.coupon: debug
+logging:
+  level:
+    com.stackingrule.coupon: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE

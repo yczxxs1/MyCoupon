@@ -13,25 +13,15 @@ import com.stackingrule.coupon.service.IUserService;
 import com.stackingrule.coupon.vo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import static javafx.util.Pair.*;
+
 
 /**
  * <h1>用户服务接口实现</h1>
@@ -72,6 +62,7 @@ public class UserServiceImpl implements IUserService {
 
     /**
      * <h2>根据用户 id 和状态查询优惠券记录</h2>
+     * 先从redis里拿，没有从db里拿
      * @param userId 用户 id
      * @param status 优惠券状态
      * @return
@@ -94,7 +85,7 @@ public class UserServiceImpl implements IUserService {
                     CouponStatus.of(status)
             );
             // 如果数据库中没有记录, 直接返回就可以, Cache 中已经加入了一张无效的优惠券
-            if (CollectionUtils.isNotEmpty(dbCoupons)) {
+            if (CollectionUtils.isEmpty(dbCoupons)) {
                 log.debug("current user do not have coupon: {}, {}", userId, status);
                 return dbCoupons;
             }
@@ -117,7 +108,7 @@ public class UserServiceImpl implements IUserService {
             preTarget = dbCoupons;
 
             // 将记录写入 Cache
-            redisService.addCouponToCache(userId, preTarget, status);
+            redisService.addCouponToCacheFromDb(userId, preTarget, status);
 
         }
 
@@ -159,7 +150,7 @@ public class UserServiceImpl implements IUserService {
     }
 
     /**
-     * <h2>根据用户 id 查找当前可以领取的优惠券模板</h2>
+     * <h2>根据用户 id 查找当前可以领取的优惠券的优惠券模板</h2>
      * @param userId 用户 id
      * @return
      * @throws CouponException
@@ -260,6 +251,7 @@ public class UserServiceImpl implements IUserService {
         List<Coupon> userUsableCoupons = findCouponByStatus(
                 request.getUserId(),
                 CouponStatus.USABLE.getCode());
+
         Map<Integer, List<Coupon>> templateId2Coupons = userUsableCoupons
                 .stream().collect(Collectors.groupingBy(Coupon::getTemplateId));
 
@@ -304,6 +296,48 @@ public class UserServiceImpl implements IUserService {
     @Override
     public SettlementInfo settlement(SettlementInfo info)
             throws CouponException {
-        return null;
+
+
+        List<Integer> couponIds = info.getCouponAndTemplateInfos().stream()
+                .map(SettlementInfo.CouponAndTemplateInfo::getId)
+                .collect(Collectors.toList());
+        List<Integer> couponIdsByStatus = findCouponByStatus(info.getUserId(),CouponStatus.USABLE.getCode()).stream()
+                .map(Coupon::getId)
+                .collect(Collectors.toList());
+        if(!couponIdsByStatus.containsAll(couponIds)){
+            throw new CouponException("no available coupon!!");
+        }
+
+
+        Map<Integer, CouponTemplateSDK> couponAndTemplateInfoMap=info.getCouponAndTemplateInfos().stream()
+                .collect(Collectors.toMap(SettlementInfo.CouponAndTemplateInfo::getId, SettlementInfo.CouponAndTemplateInfo::getTemplate));
+
+        List<Coupon> coupons= couponDao.findAllById(couponIds);
+        coupons.forEach(
+                e->e.setTemplateSDK(couponAndTemplateInfoMap.get(e.getId()))
+        );
+
+        redisService.addCouponToCache(
+                info.getUserId(),
+                coupons,
+                CouponStatus.USED.getCode()
+        );
+
+        SettlementInfo settlementInfo=settlementClient.computeRule(info).getData();
+        if(settlementInfo.getEmploy()){
+
+            // 发送到 kafka 中做异步处理
+            kafkaTemplate.send(
+                    Constant.TOPIC,
+                    JSON.toJSONString(new CouponKafkaMessage(
+                            CouponStatus.USED.getCode(),
+                            couponIds
+                    ))
+            );
+
+        }
+        return settlementInfo;
+
+
     }
 }

@@ -13,6 +13,7 @@ import com.stackingrule.coupon.vo.TemplateRule;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -28,6 +29,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@DynamicUpdate
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "coupon_template")
 @JsonSerialize(using = CouponTemplateSerialize.class)

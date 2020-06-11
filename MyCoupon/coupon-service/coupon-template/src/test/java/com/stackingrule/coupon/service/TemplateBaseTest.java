@@ -22,8 +22,7 @@ public class TemplateBaseTest {
 
     @Test
     public void testBuildTemplateInfo() throws CouponException {
-        System.out.println(JSON.toJSONString(baseService.buildTemplateInfo(1)));
-        System.out.println(JSON.toJSONString(baseService.buildTemplateInfo(1000)));
+        System.out.println(JSON.toJSONString(baseService.buildTemplateInfo(11)));
 
     }
 

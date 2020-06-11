@@ -7,7 +7,6 @@ spring:
   application:
     name: eureka-client-coupon-distribution
   jpa:
-    show-sql: true
     hibernate:
       ddl-auto: none
     properties:
@@ -16,9 +15,9 @@ spring:
     open-in-view: false
   datasource:
     # 数据源
-    url: jdbc:mysql://localhost:3306/coupon_data?characterEncoding=utf-8&useSSL=false&serverTimezone=Hongkong
+    url: jdbc:mysql://localhost:3306/coupon?characterEncoding=utf-8&useSSL=false&serverTimezone=Hongkong
     username: root
-    password: bd1998
+    password: G!o2o3d4
     type: com.zaxxer.hikari.HikariDataSource
     driver-class-name: com.mysql.cj.jdbc.Driver
     # 连接池
@@ -52,11 +51,13 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://server1:8000/eureka/
+      defaultZone: http://localhost:8000/eureka/
 
 logging:
   level:
-    com.imooc.coupon: debug
+    com.stackingrule.coupon: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 
 # feign 相关的配置
 feign:

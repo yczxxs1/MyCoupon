@@ -1,5 +1,5 @@
 -- 创建 coupon 数据表
-CREATE TABLE IF NOT EXISTS `coupon_data`.`coupon` (
+CREATE TABLE `coupon` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '自增主键',
   `template_id` int(11) NOT NULL DEFAULT '0' COMMENT '关联优惠券模板的主键',
   `user_id` bigint(20) NOT NULL DEFAULT '0' COMMENT '领取用户',

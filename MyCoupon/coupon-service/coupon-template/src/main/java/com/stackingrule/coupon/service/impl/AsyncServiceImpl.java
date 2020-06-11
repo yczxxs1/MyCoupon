@@ -96,6 +96,7 @@ public class AsyncServiceImpl implements IAsyncService {
             result.add(prefix4 + buildCouponCodeSuffix14(date));
         }
 
+        //补足重复的
         while (result.size() < template.getCount()) {
             result.add(prefix4 + buildCouponCodeSuffix14(date));
         }
@@ -116,16 +117,17 @@ public class AsyncServiceImpl implements IAsyncService {
      * */
     private String buildCouponCodeSuffix14(String date) {
 
-        char[] bases = new char[]{'1', '2', '3', '4', '5', '6', '7', '8', '9'};
-
         // 中间六位
         List<Character> chars = date.chars().mapToObj(e -> (char) e)
                 .collect(Collectors.toList());
+        //洗牌随机算法
         Collections.shuffle(chars);
         String mid6 = chars.stream()
-                .map(Object::toString).collect(Collectors.joining());
+                .map(Object::toString)
+                .collect(Collectors.joining());
 
         // 后八位
+        char[] bases = new char[]{'1', '2', '3', '4', '5', '6', '7', '8', '9'};
         String suffix8 = RandomStringUtils.random(1, bases)
                 + RandomStringUtils.randomNumeric(7);
 

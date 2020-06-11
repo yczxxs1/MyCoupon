@@ -37,7 +37,7 @@ public abstract class AbstractExecutor {
 
         // 存在交集即可
         return CollectionUtils
-                .isEmpty(CollectionUtils.intersection(goodsType, templateGoodsType)
+                .isNotEmpty(CollectionUtils.intersection(goodsType, templateGoodsType)
                 );
 
     }

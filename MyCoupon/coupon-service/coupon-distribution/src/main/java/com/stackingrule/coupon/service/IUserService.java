@@ -20,6 +20,7 @@ public interface IUserService {
 
     /**
      * <h2>根据userId和status查询优惠券记录</h2>
+     * 先从redis里拿，没有从db里拿
      * @param userId 用户 id
      * @param status 优惠券状态
      * @return {@link Coupon}s
@@ -29,7 +30,7 @@ public interface IUserService {
 
 
     /**
-     * <h2>根据用户 id 查找当前可以领取的优惠券模板</h2>
+     * <h2>根据用户 id 查找当前可以领取的优惠券的优惠券模板</h2>
      * @param userId 用户 id
      * @return {@link CouponTemplateSDK}s
      * @throws CouponException
@@ -39,6 +40,7 @@ public interface IUserService {
 
     /**
      * <h2>用户领取优惠券</h2>
+     * 从coupon_template_code弹出一个优惠券放入用户可用cache中
      * @param request {@link AcquireTemplateRequest}
      * @return {@link Coupon}
      * @throws CouponException

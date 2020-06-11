@@ -5,8 +5,12 @@ import com.stackingrule.coupon.constant.CouponCategory;
 import com.stackingrule.coupon.constant.DistributeTarget;
 import com.stackingrule.coupon.constant.PeriodType;
 import com.stackingrule.coupon.constant.ProductLine;
-import com.stackingrule.coupon.vo.TemplateRequest;
+import com.stackingrule.coupon.exception.CouponException;
+import com.stackingrule.coupon.feign.TemplateClient;
+import com.stackingrule.coupon.vo.AcquireTemplateRequest;
+import com.stackingrule.coupon.vo.CouponTemplateSDK;
 import com.stackingrule.coupon.vo.TemplateRule;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.time.DateUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,39 +22,30 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 
-/**
- * <h1>构建优惠券模板测试</h1>
- */
+import static org.junit.Assert.*;
+
 @SpringBootTest
 @RunWith(SpringRunner.class)
-public class BuildTemplateTest {
+@Slf4j
+public class IUserServiceTest {
 
     @Autowired
-    private IBuildTemplateService buildTemplateService;
+    IUserService userService;
+
 
     @Test
-    public void testBuildTemplate() throws Exception {
-        System.out.println(JSON.toJSONString(
-                buildTemplateService.buildTemplate(fakeTemplateRequest())
-        ));
-        Thread.sleep(5000);
+    public void findCouponByStatus() throws CouponException {
+        userService.findCouponByStatus(11111l,2);
+
     }
 
-    /**
-     * <h2>fake TemplateRequest</h2>
-     * @return
-     */
-    private TemplateRequest fakeTemplateRequest() {
+    @Test
+    public void findAvailableTemplate() {
+    }
 
-        TemplateRequest request = new TemplateRequest();
-        request.setName("优惠券模板-" + new Date().getTime());
-        request.setLogo("http://www.imooc.com");
-        request.setDesc("这是一张优惠券模板");
-        request.setCategory(CouponCategory.MANJIAN.getCode());
-        request.setProductLine(ProductLine.DAMAO.getCode());
-        request.setCount(100);
-        request.setUserId(10002L);  // fake user id
-        request.setTarget(DistributeTarget.SINGLE.getCode());
+    @Test
+    public void acquireTemplate() throws CouponException {
+
 
         TemplateRule rule = new TemplateRule();
         rule.setExpiration(new TemplateRule.Expiration(
@@ -65,9 +60,24 @@ public class BuildTemplateTest {
         ));
         rule.setWeight(JSON.toJSONString(Collections.EMPTY_LIST));
 
-        request.setRule(rule);
+        CouponTemplateSDK couponTemplateSDK=new CouponTemplateSDK();
+        couponTemplateSDK.setId(1);
+        couponTemplateSDK.setName("优惠券01");
+        couponTemplateSDK.setLogo("http://www.imooc.com");
+        couponTemplateSDK.setProductLine(1);
+        couponTemplateSDK.setDesc("这是一张优惠券模板");
+        couponTemplateSDK.setCategory("满减券");
+        couponTemplateSDK.setKey("1001202005190016");
+        couponTemplateSDK.setRule(rule);
 
-        return request;
+        AcquireTemplateRequest request = new AcquireTemplateRequest
+                (11111l, couponTemplateSDK);
+
+        userService.acquireTemplate(request);
     }
 
+    @Test
+    public void settlement() {
+
+    }
 }

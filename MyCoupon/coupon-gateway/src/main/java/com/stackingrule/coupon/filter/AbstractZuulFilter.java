@@ -43,7 +43,6 @@ public abstract class AbstractZuulFilter extends ZuulFilter {
 
     Object success() {
         context.set(NEXT, true);
-
         return null;
     }
 }

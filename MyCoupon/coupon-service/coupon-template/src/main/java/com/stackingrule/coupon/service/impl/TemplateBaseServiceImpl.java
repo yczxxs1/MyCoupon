@@ -79,6 +79,7 @@ public class TemplateBaseServiceImpl implements ITemplateBaseService {
                 .map(this::template2TemplateSDK)
                 .collect(Collectors.toMap(
                 CouponTemplateSDK::getId,
+                //返回本身
                 Function.identity()
         ));
     }
